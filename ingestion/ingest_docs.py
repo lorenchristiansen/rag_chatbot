@@ -5,9 +5,14 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 import bs4
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from .env
+load_dotenv()
+model_name = os.getenv("MODEL_NAME")
 
-embeddings = OllamaEmbeddings(model="codegemma")
+embeddings = OllamaEmbeddings(model=model_name)
 vector_store = Chroma(persist_directory="chroma_db", embedding_function=embeddings)
 
 # Load and chunk contents of the blog

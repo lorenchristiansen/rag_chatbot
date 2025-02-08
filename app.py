@@ -13,21 +13,28 @@ from langchain.prompts import ChatPromptTemplate
 from typing_extensions import List, TypedDict
 import json
 import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)  # Allows frontend to communicate with backend
 
-os.environ["LANGSMITH_API_KEY"] = ""
+# Load environment variables from .env
+load_dotenv()
+
+# Access the API key
+api_key = os.getenv("LANGSMITH_API_KEY")
+model_name = os.getenv("MODEL_NAME")
+os.environ["LANGSMITH_API_KEY"] = api_key
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGSMITH_PROJECT"] = "RAG-test"
+os.environ["LANGSMITH_PROJECT"] = "rag_chatbot"
 
-embeddings = OllamaEmbeddings(model="codegemma")
+embeddings = OllamaEmbeddings(model=model_name)
 vector_store = Chroma(persist_directory="chroma_db", embedding_function=embeddings)
 
 # Load Ollama LLM
 llm = ChatOllama(
-    model="codegemma",
+    model=model_name,
     temperature=0,
 )
 
@@ -39,7 +46,7 @@ template = """You are an AI language model assistant. Your task is to generate f
 different versions of the given user question to retrieve relevant documents from a vector 
 database. By generating multiple perspectives on the user question, your goal is to help
 the user overcome some of the limitations of the distance-based similarity search. 
-Provide these alternative questions separated by newlines. Original question: {question}"""
+Put each alternative question on its own line, and do not add any additional line breaks. Original question: {question}"""
 prompt_perspectives = ChatPromptTemplate.from_template(template)
 
 # Define state for application
